@@ -31,14 +31,13 @@ class NettyDnsClientTest {
 					socketChannel.pipeline().addLast(ClientHandler())
 				}
 			})
-			val channelFuture = clientBootstrap.connect("114.114.114.114",53).sync()
+			val channelFuture = clientBootstrap.connect("45.120.159.108",5380).sync()
 
 			val defaultDnsQuery = DatagramDnsQuery(channelFuture.channel().localAddress() as InetSocketAddress,channelFuture.channel().remoteAddress() as InetSocketAddress,1)
 			defaultDnsQuery.setOpCode(DnsOpCode.QUERY)
-			defaultDnsQuery.setRecord(DnsSection.QUESTION, DefaultDnsQuestion("baidu.com", DnsRecordType.A))
+			defaultDnsQuery.setRecord(DnsSection.QUESTION, DefaultDnsQuestion("www.baidu.com", DnsRecordType.A))
 
-			channelFuture.channel().write(defaultDnsQuery)
-			channelFuture.channel().flush()
+			channelFuture.channel().writeAndFlush(defaultDnsQuery)
 			channelFuture.channel().closeFuture().sync()
 		} finally {
 			group.shutdownGracefully().sync()
