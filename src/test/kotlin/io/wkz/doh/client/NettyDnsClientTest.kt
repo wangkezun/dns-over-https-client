@@ -7,6 +7,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel
 import io.netty.handler.codec.dns.*
 import io.wkz.doh.client.bootstrap.ClientHandler
 import org.junit.Test
+import java.net.InetSocketAddress
 
 /**
  *
@@ -30,11 +31,13 @@ class NettyDnsClientTest {
 					socketChannel.pipeline().addLast(ClientHandler())
 				}
 			})
-			val channelFuture = clientBootstrap.connect("localhost",8053).sync()
-			val defaultDnsQuery = DefaultDnsQuery(1)
-			defaultDnsQuery.addRecord(DnsSection.QUESTION, DefaultDnsQuestion("baidu.com", DnsRecordType.A))
+			val channelFuture = clientBootstrap.connect("114.114.114.114",53).sync()
 
-			channelFuture.channel().write("123")
+			val defaultDnsQuery = DatagramDnsQuery(channelFuture.channel().localAddress() as InetSocketAddress,channelFuture.channel().remoteAddress() as InetSocketAddress,1)
+			defaultDnsQuery.setOpCode(DnsOpCode.QUERY)
+			defaultDnsQuery.setRecord(DnsSection.QUESTION, DefaultDnsQuestion("baidu.com", DnsRecordType.A))
+
+			channelFuture.channel().write(defaultDnsQuery)
 			channelFuture.channel().flush()
 			channelFuture.channel().closeFuture().sync()
 		} finally {

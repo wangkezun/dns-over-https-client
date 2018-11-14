@@ -2,7 +2,10 @@ package io.wkz.doh.client
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.Unpooled
-import io.netty.channel.*
+import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.ChannelInboundHandlerAdapter
+import io.netty.channel.ChannelInitializer
+import io.netty.channel.ChannelOption
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
@@ -40,7 +43,7 @@ class NettyTest {
 			})
 
 			// Start the client.
-			val f = b.connect("localhost", 8053).sync()
+			val f = b.connect("61.135.169.121", 80).sync()
 
 			val uri = URI("http://baidu.com")
 			val msg = "Are you ok?"
@@ -54,7 +57,8 @@ class NettyTest {
 			request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE)
 			request.headers().set(HttpHeaders.Names.CONTENT_LENGTH, request.content().readableBytes())
 			// 发送http请求
-			f.channel().writeAndFlush(request).addListener(ChannelFutureListener.CLOSE)
+			f.channel().write(request)
+			f.channel().flush()
 			f.channel().closeFuture().sync()
 		} finally {
 			workerGroup.shutdownGracefully()
