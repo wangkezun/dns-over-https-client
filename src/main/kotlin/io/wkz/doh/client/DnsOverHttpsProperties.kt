@@ -7,8 +7,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  * @author 王可尊
  * @since 1.0
  */
-@ConfigurationProperties("dns")
+@ConfigurationProperties("dns.bootstrap")
 class DnsOverHttpsProperties {
-	lateinit var bootStrapServerList: List<String>
-	lateinit var upstreamUrl:String
+    lateinit var bootStrapServerList: List<String>
+    var upstreamUrl: String = "https://dns.google.com/resolve?"
 }

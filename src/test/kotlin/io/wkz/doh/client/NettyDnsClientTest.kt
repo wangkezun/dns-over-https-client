@@ -1,13 +1,12 @@
 package io.wkz.doh.client
 
-import io.netty.bootstrap.Bootstrap
-import io.netty.channel.ChannelInitializer
-import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel.socket.nio.NioDatagramChannel
-import io.netty.handler.codec.dns.*
-import io.wkz.doh.client.bootstrap.ClientHandler
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.junit.Test
-import java.net.InetSocketAddress
+import org.xbill.DNS.Lookup
+import org.xbill.DNS.SimpleResolver
+import java.net.InetAddress
+import java.nio.charset.Charset
 
 /**
  *
@@ -15,32 +14,23 @@ import java.net.InetSocketAddress
  * @since 1.0
  */
 class NettyDnsClientTest {
-	@Test
-	fun test() {
-		val group = NioEventLoopGroup()
-		try {
-			val clientBootstrap = Bootstrap()
+    private val log by lazyLogger()
 
-			clientBootstrap.group(group)
-			clientBootstrap.channel(NioDatagramChannel::class.java)
-			clientBootstrap.handler(object : ChannelInitializer<NioDatagramChannel>() {
-				@Throws(Exception::class)
-				override fun initChannel(socketChannel: NioDatagramChannel) {
-					socketChannel.pipeline().addLast(DatagramDnsQueryEncoder())
-					socketChannel.pipeline().addLast(DatagramDnsResponseDecoder())
-					socketChannel.pipeline().addLast(ClientHandler())
-				}
-			})
-			val channelFuture = clientBootstrap.connect("45.120.159.108",5380).sync()
 
-			val defaultDnsQuery = DatagramDnsQuery(channelFuture.channel().localAddress() as InetSocketAddress,channelFuture.channel().remoteAddress() as InetSocketAddress,1)
-			defaultDnsQuery.setOpCode(DnsOpCode.QUERY)
-			defaultDnsQuery.setRecord(DnsSection.QUESTION, DefaultDnsQuestion("www.baidu.com", DnsRecordType.A))
+    @Test
+    fun testSpotify() {
+        val simpleResolver = SimpleResolver("114.114.114.114")
+        val lookup = Lookup("www.baidu.com")
+        lookup.setResolver(simpleResolver)
+        val run = lookup.run()
+        log.info("{}", run[0].rdataToWireCanonical())
+        val allByName = InetAddress.getAllByName("www.baidu.com")
+        log.info("{}", allByName)
+        val client = OkHttpClient.Builder().dns {
+            listOf(InetAddress.getByAddress("www.baidu.com", run[0].rdataToWireCanonical()))
+        }.build()
+        val body = client.newCall(Request.Builder().url("https://www.baidu.com").get().build()).execute().body()
+        log.info("{}", body?.bytes()?.toString(Charset.defaultCharset()))
 
-			channelFuture.channel().writeAndFlush(defaultDnsQuery)
-			channelFuture.channel().closeFuture().sync()
-		} finally {
-			group.shutdownGracefully().sync()
-		}
-	}
+    }
 }

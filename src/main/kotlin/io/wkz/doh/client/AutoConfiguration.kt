@@ -9,6 +9,5 @@ import org.springframework.context.annotation.Configuration
  * @since 1.0
  */
 @Configuration
-@EnableConfigurationProperties(DnsOverHttpsProperties::class)
-class AutoConfiguration {
-}
+@EnableConfigurationProperties(value = [DnsOverHttpsProperties::class, LocalExposeServerProperties::class])
+class AutoConfiguration

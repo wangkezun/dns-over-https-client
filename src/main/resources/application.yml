@@ -1,4 +1,8 @@
 dns:
-  boot-strap-server-list:
-  - 114.114.114.114:53
-  upstream-url: https://dns.google.com/resolve?
+  bootstrap:
+    boot-strap-server-list:
+    - 114.114.114.114:53
+    upstream-url: https://dns.google.com/resolve?
+  server:
+    host: 127.0.0.1
+    port: 8053

@@ -5,7 +5,10 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.dns.*
+import io.wkz.doh.client.cache.DefaultCache
 import io.wkz.doh.client.lazyLogger
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.util.*
 
 
@@ -14,8 +17,11 @@ import java.util.*
  * @author 王可尊
  * @since 1.0
  */
+@Component
 class DnsHandler : SimpleChannelInboundHandler<DatagramDnsQuery>() {
 
+    @Autowired
+    private lateinit var defaultCache: DefaultCache
 
     private val log by lazyLogger()
     override fun channelRead0(ctx: ChannelHandlerContext, query: DatagramDnsQuery) {
